@@ -1,15 +1,19 @@
+import warnings
 import cv2
 import numpy as np
 import face_recognition
 import mediapipe as mp
 import os
 import serial
+import time
 import webbrowser
 from collections import defaultdict
 
-# Initialize serial communication with Arduino
+warnings.filterwarnings('ignore', message='SymbolDatabase.GetPrototype() is deprecated')
+
+# Initialize serial communication
 try:
-    ser = serial.Serial('COM3', 9600, timeout=1) # Replace 'COM3' with your Arduino's serial port
+    ser = serial.Serial('COM3', 9600, timeout=1)  # Replace 'COM3' with your Arduino's serial port
     print("Serial connection established")
 except serial.SerialException as e:
     print(f"Error: {e}")
@@ -26,6 +30,17 @@ for cl in myList:
     classNames.append(os.path.splitext(cl)[0])
 print(f"Loaded class names: {classNames}")
 
+def findEncodings(images):
+    encodeList = []
+    for img in images:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        encode = face_recognition.face_encodings(img)[0]
+        encodeList.append(encode)
+    return encodeList
+
+encodeListKnown = findEncodings(images)
+print('Encoding Complete')
+
 # Initialize Mediapipe Face Mesh
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh(max_num_faces=1)
@@ -34,15 +49,16 @@ mp_drawing = mp.solutions.drawing_utils
 # Initialize face detection
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-# Dictionary to store user balances
-user_balances = defaultdict(lambda: 1000) # Default balance is 1000 for simplicity
+# List to store recognized names
+recognizedNames = []
 
+# Function to run the face recognition and mesh detection
 def run_face_recognition():
     cap = cv2.VideoCapture(0)
 
     if not cap.isOpened():
         print("Error: Could not open webcam.")
-        return None, None
+        return
 
     recognized_name = None
 
@@ -109,7 +125,43 @@ def run_face_recognition():
 
     return recognized_name
 
-if __name__ == '__main__':
+# Initialize a dictionary to store user balances
+user_balances = defaultdict(lambda: 1000)  # Default balance is 1000 for simplicity
+
+def atm_interface(recognized_name):
+    while True:
+        print("\nWelcome to the ATM")
+        print(f"Hello, {recognized_name}!")
+        print("1. Balance Inquiry")
+        print("2. Withdraw")
+        print("3. Deposit")
+        print("4. Exit")
+        choice = input("Select an option: ")
+
+        if choice == "1":
+            print(f"Your current balance is ${user_balances[recognized_name]}")
+
+        elif choice == "2":
+            amount = float(input("Enter amount to withdraw: "))
+            if user_balances[recognized_name] >= amount:
+                user_balances[recognized_name] -= amount
+                print(f"Withdrew ${amount}. New balance: ${user_balances[recognized_name]}")
+            else:
+                print("Insufficient funds!")
+
+        elif choice == "3":
+            amount = float(input("Enter amount to deposit: "))
+            user_balances[recognized_name] += amount
+            print(f"Deposited ${amount}. New balance: ${user_balances[recognized_name]}")
+
+        elif choice == "4":
+            print("Thank you for using the ATM. Goodbye!")
+            break
+
+        else:
+            print("Invalid option. Please try again.")
+
+if __name__ == '_main_':
     # Wait for the 'rfid', 'rfid1', or 'rfid2' message from Arduino
     while True:
         if ser.in_waiting > 0:
@@ -118,34 +170,34 @@ if __name__ == '__main__':
                 print("Received 'rfid' message from Arduino. Starting face recognition...")
                 recognized_name = run_face_recognition()
                 ser.close()
-                if recognized_name:
-                    print("Redirecting to the ATM interface...")
-                    atm_interface(recognized_name)
+                if recognized_name == 'HEMANTH':
+                    if recognized_name:
+                        webbrowser.open('http://192.168.43.237:8501')
+                        atm_interface(recognized_name)
                 else:
-                    print("Face is not detected. Not allowed to access the account.")
+                    print("Hemanth face is not detected. Not allowed to access the account.")
                 break
-
             elif line == "rfid1":
                 print("Received 'rfid1' message from Arduino. Starting face recognition...")
                 recognized_name = run_face_recognition()
                 ser.close()
-                if recognized_name:
-                    print("Redirecting to the ATM interface...")
-                    atm_interface(recognized_name)
+                if recognized_name == 'SAI KUMAR':
+                    if recognized_name:
+                        webbrowser.open('http://192.168.43.237:8501')
+                        atm_interface(recognized_name)
                 else:
-                    print("Face is not detected. Not allowed to access the account.")
+                    print("Sai Kumar face is not detected. Not allowed to access the account.")
                 break
-
             elif line == "rfid2":
                 print("Received 'rfid2' message from Arduino. Starting face recognition...")
                 recognized_name = run_face_recognition()
                 ser.close()
-                if recognized_name:
-                    print("Redirecting to the ATM interface...")
-                    atm_interface(recognized_name)
+                if recognized_name == 'BHARATH':
+                    if recognized_name:
+                        webbrowser.open('http://192.168.43.237:8501')
+                        atm_interface(recognized_name)
                 else:
-                    print("Face is not detected. Not allowed to access the account.")
+                    print("Bharath face is not detected. Not allowed to access the account.")
                 break
-
             else:
                 print("No card is detected.")

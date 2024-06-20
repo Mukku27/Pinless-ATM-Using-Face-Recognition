@@ -14,8 +14,7 @@ This project aims to create a secure ATM system that uses face recognition techn
 ### Hardware Components
 - **Arduino Uno**: Central controller for the ATM hardware.
 - **LCD Display and Keypad**: Facilitate user interaction and provide feedback.
-- **EEPROM**: For data storage.
-- **Serial Communication**: For interfacing with the face recognition system.
+- **RFID Module and Reader**: Reads the unique ID of the user and verifies it against the face recognition system.
 
 ### Software Components
 - **Python-based Face Recognition**: Using OpenCV and face_recognition libraries.
@@ -26,7 +25,7 @@ This project aims to create a secure ATM system that uses face recognition techn
 ## Setup and Installation
 
 ### Hardware Setup
-1. Connect the LCD display, keypad, and EEPROM to the Arduino as per the pin configuration in the Arduino code.
+1. Connect the LCD display, keypad, and RFID module to the Arduino as per the pin configuration in the Arduino code.
 2. Upload the Arduino code to the Arduino board.
 
 ### Software Setup
@@ -76,9 +75,6 @@ This project is licensed under the MIT License. See the LICENSE file for more de
 
 ## Authors
 - [Mukesh Vemulapalli](https://github.com/VemulapalliMukesh27)
-
-## Acknowledgements
-- Special thanks to the contributors of OpenCV and Mediapipe libraries.
 
 ## Contact
 For any questions or feedback, please contact [vemulapallimukesh@gmail.com](mailto:vemulapallimukesh@gmail.com).
